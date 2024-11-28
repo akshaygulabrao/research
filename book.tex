@@ -1,0 +1,90 @@
+\documentclass[12pt]{book}
+
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage[margin=1in]{geometry} % Set narrow margins
+\title{Research Topics in Path-Planning and Efficient CNNs}
+\author{Akshay Gulabrao}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\tableofcontents
+
+\chapter{Introduction}
+This book presents two distinct areas of research: path planning algorithms for autonomous drones and efficient convolutional neural networks for object detection.
+
+\subsection{Path Planning}
+Path planning generally involves navigation in two different scopes: global and local. In global path planning, the goal is to navigate in large areas around obstacles by specifying the waypoints of the shortest path. Classical approaches in the global path planning space involved $\text{A}^*$ search. In $\text{A}^*$ search, the area is quantized into grid spaces that the robot can navigate to. The robot considers each grid cell one by one, and visits the grid spaces near the target far more often.  \cite{hart1968formal}. I implemented visibility graphs, which convert the 2D space into a compressed representation suitable for global path planning \cite{lozano1979algorithm}.\\
+
+Local path planning deals with navigation in space constrained or time constrained environments. Quick, efficient navigation algorithms are critical to success. Most approaches involve sampling a prospective path from the source to the destination and the optimizing it through linear programming. I worked on an approach that generates a trajectory from end to end without any priors while also avoiding obstacles.
+
+A critical part of the autonomy of drones is their effectiveness in surveilling large amounts of area without human supervision. A good surveillance algorithm should efficiently build a 4D model of the world while prioritizing important areas. Important areas are areas that change more frequently than others. As an example, a drone doing surveillance over a city should surveil streets far more frequently than say a hiking trail. Streets are more uncertain than hiking trails. However the hiking trails should still occasionally be visited. In other words, each area has a certain importance, and we want to minimize the importance-weighted time between revisiting each area. This is known as the latency graph problem in the graph theory literature. Alamdari proposes an TSP-based divide and conquer algorithm given exponential weights of nodes. \cite{alamdari2012latency}
+
+\subsection{Efficient Convolutional Neural Networks}
+Modern day militaries utilize autonomous vehicles for reconnaissance to minimize human and financial losses. Autonomous drones can provide them with low-altitude satellite imagery deep into enemy territory. The biggest constraint of drones is their ability to accurately detect targets of interest given their low computational budget. The military effectiveness of drones is directly related to how effectively they can detect targets of interest.
+
+Convolutional Neural Networks are used universally in the field of object detection given their translation invariance and efficiency in processing images. Old app
+
+
+
+
+\chapter{Research in Path-Planning}
+\section{Path-Planning}
+\subsection{Introduction to Path-Planning}
+% Add content here
+
+\section{Global Path-Planning}
+% Add content here
+
+\section{Surveillance}
+% Add content here
+
+\section{Motion-Planning}
+% Add content here
+
+\chapter{Efficient Convolutional Neural Networks (CNNs)}
+\section{Data Preparation}
+\subsection{Data Generation}
+% Add content here
+
+\subsection{Data Augmentation}
+% Add content here
+
+\section{Network Architectures}
+\subsection{Single-Shot Detector}
+% Add content here
+
+\subsection{Transformer-based Vision Networks}
+% Add content here
+
+\section{Further Research}
+\subsection{RNN Fused Detections}
+% Add content here
+
+\subsection{Unsupervised Learning}
+% Add content here
+
+\chapter{Smaller Projects}
+\section{Bundle Adjustment with DFT Registration}
+% Add content here
+
+\section{Kalman Filters}
+% Add content here
+
+\section{Image Projection}
+% Add content here
+
+\chapter{Process Automation}
+
+\chapter{Options Pricing with Black Scholes}
+% Add content here
+
+\bibliographystyle{plain}
+\bibliography{references}
+
+\end{document}
