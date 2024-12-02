@@ -33,3 +33,5 @@ uv.lock
 *.fdb_latexmk
 *.synctex.gz
 *.run.xml
+
+images/

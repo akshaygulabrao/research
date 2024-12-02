@@ -4,63 +4,21 @@
 \usepackage{hyperref}
 \usepackage{amsmath}
 \usepackage{amssymb}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+
 \usepackage[margin=1in]{geometry} % Set narrow margins
-\title{Research Topics in Path-Planning and Efficient CNNs}
+\setlength{\parskip}{1em} % Adjust the value to control the space between paragraphs
+\title{Research Topics in Path-Planning and Automated Target Recognition}
 \author{Akshay Gulabrao}
 \date{\today}
-
 \begin{document}
 \maketitle
-\section{Overview}
 \input{intro.tex}
-\section{Research in Path-Planning}
-\subsection{Path-Planning}
-\subsubsection{Introduction to Path-Planning}
+\input{path-planning.tex}
+
+
 % Add content here
-
-
-\subsection{Global Path-Planning}
-% Add content here
-
-\subsection{Surveillance}
-% Add content here
-
-\subsection{Motion-Planning}
-% Add content here
-
-\section{Efficient Convolutional Neural Networks (CNNs)}
-\subsection{Data Preparation}
-\subsubsection{Data Generation}
-% Add content here
-
-\subsubsection{Data Augmentation}
-% Add content here
-
-\subsection{Network Architectures}
-\subsubsection{Single-Shot Detector}
-% Add content here
-
-\subsubsection{Transformer-based Vision Networks}
-% Add content here
-
-\subsection{Further Research}
-\subsubsection{RNN Fused Detections}
-% Add content here
-
-\subsubsection{Unsupervised Learning}
-% Add content here
-
-\section{Smaller Projects}
-\subsection{Bundle Adjustment with DFT Registration}
-% Add content here
-
-\subsection{Kalman Filters}
-% Add content here
-
-\subsection{Image Projection}
-% Add content here
-
-\section{Options Pricing with Black Scholes}
-% Add content here
-
+\bibliographystyle{plain} % or another style like unsrt, alpha, etc.
+\bibliography{references} % without the .bib extension
 \end{document}

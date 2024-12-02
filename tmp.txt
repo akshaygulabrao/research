@@ -1,0 +1,32 @@
+    \subsection{Introduction to Path-Planning}
+    \subsection{Global Path-Planning}
+    \subsection{Surveillance}
+    \subsection{Motion-Planning}
+\section{Efficient Convolutional Neural Networks (CNNs)}
+    \subsection{Data Preparation}
+        \subsubsection{Data Generation}
+        \subsubsection{Data Augmentation}
+
+    \subsection{Network Architectures}
+        \subsubsection{Single-Shot Detector}
+        \subsubsection{Transformer-based Vision Networks}
+
+    \subsection{Further Research}
+        \subsubsection{RNN Fused Detections}
+        \subsubsection{Unsupervised Learning}
+
+\section{Smaller Projects}
+\subsection{Bundle Adjustment with DFT Registration}
+% Add content here
+
+\subsection{Kalman Filters}
+% Add content here
+
+\subsection{Image Projection}
+% Add content here
+
+\section{Options Pricing with Black Scholes}
+
+There are currently 3 algorithms that can convert a 2D spatial representation into a visibility graph. The first is the naive $\mathcal{O}(n^4)$ algorithm that compares each obstacle vertex edge to every other obstacle vertex edge to check if there are any obstacles in between them. I used the mature implementation from GitHub user matthewchan. \cite{chan2018vgraph} However, this repository has a bug in that it assumes that the optimal path never involves traversing two edges on the same obstacle.
+
+According to the problem statement, the keep-out areas would be rectangular and extremely easy to avoid. The development cost alone is far more expensive than the extra efficiency gained by using more sophisticated algorithms. I implemented the algorithm in Python, and then used pybind11 to call the Python code from C++. Pybind11 enables the quick utilization of both languages: Python for complex algorithms and C++ for when efficiency is crucial.
