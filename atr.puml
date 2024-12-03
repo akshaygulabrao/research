@@ -1,0 +1,48 @@
+@startuml
+left to right direction
+
+class "Pretraining" {
+    + Objects 365
+    + COCO
+    + UAVDT
+}
+class "Benchmarking" {
+    + Internal Datasets
+    + FPS
+    + Power
+}
+
+class "Finetuning" {
+    + Loss Function Tweaking
+    + Activation Function Tuning
+}
+
+class ONNX{
+    + torch dynamo
+    + netron
+}
+class "Training" {
+    + Internal Datasets
+
+}
+class "TensorRT Plan" {
+    + Quantization: INT8 BFLOAT
+    + Quantization Aware Training
+    + TensorRT Plugin
+    + Custom Operations
+}
+
+class "Deployment" {
+    + Power Tuning
+}
+
+Pretraining -> Training
+Training -> Benchmarking
+Benchmarking -> ONNX
+Benchmarking --> Finetuning
+Finetuning --> Training
+ONNX -> "TensorRT Plan"
+"TensorRT Plan" --> Deployment
+Deployment --> "TensorRT Plan"
+
+@enduml

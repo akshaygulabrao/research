@@ -1,3 +1,4 @@
+% !TeX root = book.tex
 \documentclass[12pt]{article}
 
 \usepackage{graphicx}
@@ -5,7 +6,11 @@
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{algorithm}
+\usepackage{outlines}
 \usepackage{algorithmic}
+\usepackage{biblatex}
+\addbibresource{references.bib}
+
 
 \usepackage[margin=1in]{geometry} % Set narrow margins
 \setlength{\parskip}{1em} % Adjust the value to control the space between paragraphs
@@ -14,11 +19,142 @@
 \date{\today}
 \begin{document}
 \maketitle
-\input{intro.tex}
-\input{path-planning.tex}
+\section{Overview}
+Logos Technologies (Logos) builds autonomous drones that operate in a mission area independently to investigate targets of interest.
+Each drone uses automated target recognition and image projection to identify and localize areas of interest in real-time.
+During my two years at Logos, I was responsible for the development and deployment of algorithms in two domains: path planning and automated target recognition.
+
+Path planning defines navigation behavior of where and how the drone moves in a given mission area.
+In global path-planning, the drone needs specific waypoints to navigate to a location while avoiding keep-out zones.
+I researched and implemented an improvement to the A* search algorithm, visibility graphs.
+In surveillance, the drone needs specific waypoints to navigate towards such that each area in a mission area gets visited occasionally, while high priority areas get visited more frequently.
+I researched and proposed a latency-graph representation of the problem, which provides an optimal route to minimize time between reacquiring areas of high priority.
+I also familiarized myself with motion planning, which uses convex optimization to find a desirable trajectory.
+
+Automated target recognition is the algorithmic problem of recognizing targets of interest given image data.
+Convolutional neural networks are used ubiquitously due to the crucial translation-invariance property that the convolution function provides.
+I managed the Single-Shot-Detector (SSD), which uses a one-stage detection network to identify and localize targets.
+
+The network had a good detection accuracy of 90\% and ran at about 10 frames per second on an NVIDIA Xavier NX, but suffered from false alarms due to water glare.
+I implemented custom modifications to enable the network to run on low power embedded hardware.
+Later when the mission changed to allow for higher performance networks, I wrote data-loaders and modified the network architecture of RTDETR, allowing for higher performance in situational contexts.
+
+I provide details on all 3 path-planning algorithms that I have worked on in section 2, my work in automated target recognition in section 3, smaller projects that I worked on in section 4, and hobbyist projects that I worked on in my spare time in section 5.
+
+\section{Path-Planning}
+The most essential function for an autonomous drone is path-planning. It must be able to move through space efficiently without colliding with any obstacles. There are generally 3 distinct problems within this framework: (1) Path Navigation, (2) Motion Planning, and (3) Surveillance.
+
+Path navigation involves navigating from a source to a destination through obstacles. The goal is a sequence of waypoints that minimize the distance traveled to go from the source to the destination. Then a robot can go in a straight line to each waypoint, and when reached, travels in a straight line to the next waypoint until it reaches the destination.
+
+Motion planning is similar to path navigation because the goal is still to navigate from a source position to a destination position, but differs from path navigation because it requires motor instructions for each timestep. Each motor requires unique instructions. The precise controls make the problem extremely difficult in space-constrained environments, where there is very little free space. Another difficult scenario is time-constrained environments, where the most critical success factor is time to target.
+
+Surveillance is similar to path navigation in that the instructions involve a list of waypoints that the robot navigates towards in a straight line, but different in that there is no given starting point or ending point. The idea is that the drone should independently patrol a mission area, visiting important areas frequently while occasionally visiting other areas.
+
+\subsection{Path Navigation}
+The foundational work in path navigation is the A* (A-star) search algorithm, which involves intelligently exploring locations to find a route from the source to the destination. \cite{hartFormalBasisHeuristic1968} The A* search algorithm always returns an optimal solution given an admissible heuristic function. A popular heuristic is distance, because it never overestimates the distance to the goal. However, the problem with the A* search is that when used as a path-planning algorithm, it doesn't quantize each grid cell intelligently, leading to extremely expensive computations for simple navigation areas. Figure 1 displays the internal representation of A* search.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.5\textwidth]{images/best-first-search.png}
+    \caption{An internal representation of Euclidean space in the A* search algorithm. Source: \url{http://theory.stanford.edu/~amitp/GameProgramming/AStarComparison.html}}
+    \label{fig:astar}
+\end{figure}
+
+The inefficiency comes from the fact that each grid cell is naively the same area even when it is known prior that there is no obstacle between them. This leads to A* spending lots of time in obvious segments. Originally, I was responsible for implementing this algorithm for drone navigation in 2D space. The idea behind the mission was to maintain a coherent world view with multiple patrolling drones while staying outside of known danger zones. With my prior knowledge in computational geometry and path-planning, I introduced my manager to visibility graphs, and provided a mature implementation for the drone to use, introducing a significant algorithmic advantage over the A* search algorithm. It is hard to quantify how large the difference between the performance of A* and visibility graphs is. It allowed for a completely different representation. It turned 2D Euclidean space to a small graph with all the visibility relationships implicitly encoded. Complex areas that took minutes to find the best path now finished instantly.
+
+Visibility graphs preprocess the Euclidean space given a list of obstacles. \cite{lozano-perezAlgorithmPlanningCollisionfree1979} Each obstacle is represented by a list of points with the last point being identical to the first point. Visibility graphs convert the Euclidean space pathfinding problem to a graph-based pathfinding problem because of the axiom that the shortest path between two points is a straight line. If there is an obstacle in between the two points, then the shortest path will touch an obstacle. This axiom has a non-obvious conclusion: the shortest path can be found by traversing between the source, obstacle vertices, and the destination.
+
+The naive algorithm is the simplest approach. It runs in $\mathcal{O}(n^4)$ time. Here, $n$ represents the number of points: all obstacle vertices, the source, and the destination. It works by checking if traversing straight from any one vertex to another is a valid operation. The complexity comes from the fact that each vertex pair must be checked for visibility by iterating through every other vertex pair to check for any intersections. It takes $n^2$ iterations to check each vertex pair, and $n^2$ vertex pairs to check. It is considered valid if there are no obstacle vertices that cross between the points being checked. Figure~\ref{fig:code} shows the pseudocode of how the visibility graph works. The most difficult part happens on line 10, when verifying whether any obstacle intersects the line. After the visibility graph is generated, it constructs a more efficient pathfinding represented shown in Figure~\ref{fig:visual}. It is impossible for the middle of an obstacle edge to be part of the shortest path between two points.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.5\textwidth]{images/naive.png}
+    \caption{Rough pseudocode to the high level idea of visibility graphs}
+    \label{fig:code}
+\end{figure}
 
 
-% Add content here
-\bibliographystyle{plain} % or another style like unsrt, alpha, etc.
-\bibliography{references} % without the .bib extension
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.5\textwidth]{images/visual.png}
+    \caption{Representation of visibility graph}
+    \label{fig:visual}
+\end{figure}
+
+Chan's github repository implemented the basic idea of visibility graphs which was very useful to me. \cite{chanMatthewachanVgraph2022} However, the code in the repository had a critical flaw. It automatically assumed that the shortest path would never involve staying on the polygon for two adjacent segments. There were no edges checked between points on the same polygon, only points going from one polygon to another. Any time there was only one polygon between the source and the destination, the algorithm would fail. I modified this work to add that adjacent points on the same polygon are visible.
+
+\subsection{Surveillance}
+One of the ambiguous problems that I worked on at Logos was the surveillance problem. Given a large mission area, what is the best way to patrol the area so that the drone maintains situational awareness over the mission area. Some areas are more important than others and those should be visited more frequently. Less important areas don't need to be visited as much. The importance of each area is dynamic. At a particular point in time, one area can be extremely important only to become unimportant later on in the mission. Each area should get visited eventually, but the most important areas need to be visited more frequently.
+
+After a few weeks of research, I discovered that latency graphs properly represent the problem at hand. Latency graphs are different from standard graphs because they have node weights and edge weights instead of just edge weights. The latency graph $G = (V,E)$ has nodes representing important areas and edges representing the paths between them. Each node weight indicates the importance of the area, and each edge weight represents the travel time between areas. The goal is to minimize the maximum latency, which is the longest time any important area goes without being visited. By using latency graphs, I was able to develop an efficient patrol strategy that ensures critical areas are frequently monitored while still covering the entire mission area.
+
+The algorithm works in a stride scheduling mechanism similar to OS's and combines this with TSP.
+\cite{alamdariPersistentMonitoringDiscrete2012}
+
+\subsection{Motion Planning}
+Motion Planning involves the use of convex optimization for trajectory optimization. Motion Planning with Graphs of Convex Sets combines network flows, and trajectory optimization to find optimal trajectories. The optimal trajectory is formulated using bezier curves. Motion planning is different than path navigation because it requires motor instructions for each timestep.
+
+\section{Automated Target Recognition}
+Automated target recognition (ATR) refers to the class of problems that involve recognizing specified objects from imagery. One of the common use cases for object detection in military applications is for vehicles. Currently, the most popular way to approach the problem is with convolutional neural networks (CNNs).
+
+Neural Networks approximate functions using a chain of nonlinear functions parametrized by coefficients. The coefficients can be updated to approximate any function if given an error signal. CNNs are used extensively for image recognition because of their translation invariance. The identity of the object does not change based on its location inside the image. 
+
+The performance of CNNs is measured by the accuracy and the speed. The accuracy is measured using the precision and recall metrics. The precision measures the probability of detection and the recall measures the probability of a true positive. The precision and recall does not account for the size of the objects in the image themselves, which is one weakness of the metric. The speed is measured using frames per second. How many frames of detections can be processed at once. CNNs are usually modified to achieve a balance between speed and accuracy by changing the depth of the network.
+
+In practice, the largest factor that impacts the quality of CNNs is the quality of the data. Theoretically, there should be no difference between the training set and the evaluation set. Practically, this is not feasible and there is usually a large gap between the training distribution and the test distribution. However, there are a few approaches to mitigate the peformance loss from this issue.
+
+\subsection{Data Preparation}
+Any deviation of environment from the training set to the evaluation set will result in performance loss. In an attempt to mitigate this, game simulators are used. We used the Unreal Engine and Microsoft Flight Simulator to simulate the evaluation conditions. Another technique for improving evaluation performance is data augmentation. Data augmentation is the process of transforming images in semantically identical ways. 
+  
+\subsubsection{Simulators}
+Unreal Engine is a game development platform that allows for hyperrealistic game simulations. The game simulations allows lighting control, camera parameter controls, and large landscapes tuning down to programmable specifications.
+
+Our company built an internal unreal engine simulation to simulate the expected conditions for a training. A drone would navigate 60-120 feet over nautical territory and capture imagery of boats. The drone would take navigation commands from a python server. The navigation commands were in mavlink format, a standardized drone communication format that interfaces with the server for state updates. \cite{UsingPymavlinkLibraries}
+
+I wrote automation scripts to automate data collection with Powershell. Powershell is a Windows scripting language that allows task automation in Windows. I wrote a script that would set the simulation configuration files for a variety of different weather conditions, and run the simulation for 10 minutes, and store the results on a server. This ended up cutting hours of time and countless attention. Then I ran a python script to prepare it for the pytorch dataloader, manually verifying it before sending it to the data directory that we used for training.
+
+Another type of simulation that we utilized was the Microsoft Flight Simulator. We would take imagery from Microsoft flight simulator, and superimpose objects from the Unreal Engine onto it, providing accurate terrain information that the network can use to distinguish between signal and noise. I used bitmasking techniques to superimpose objects into the imagery.
+
+\subsubsection{Data Augmentation}
+After collecting internal data collected from previous runs in addition to the simulation, data augmentation is a popular technique to demonstrate semantic invariances to the network. \cite{krizhevskyImageNetClassificationDeep2012} The idea is to change the images in some way to show the network that certain transformations don't matter. A simple example of a data augmentation technique is flipping the image from left to right. Flipping the image does not change the identity of the object and helps the convolutional filters learn the objects from two perspectives.
+
+Common practice (at least at Logos) was:
+\begin{itemize}
+    \item Resize
+    \item RandomCrop
+    \item RandomHorizontalFlip
+    \item RandomPhotometricDistortion
+\end{itemize}
+This chain of data augmentation methods was extremely successful for object detection in evaluation scenarios.
+
+\subsection{SSD}
+The network architecture of CNNs must play a balancing act between complexity and speed. Empirically, the best object detection backbones consist of 3 components: (1) backbone, (2) neck, and (3) head.
+The backbone is responsible for encoding the features into a set of feature maps at multiple resolutions. The neck modifies every resolutions' feature maps to incorporate information from all the other resolutions. \cite{linFeaturePyramidNetworks2017} The head transforms the feature maps into bounding boxes and classifications.
+
+The Single Shot Detector was extremely popular circa 2017 because it used a one-shot detection process. \cite{liuSSDSingleShot2016} Prior networks first identified regions of interest and then classified them. The Single-Shot-Detector parallelizes the region proposal and classification network. 
+
+I used the mature implementation of the SSD provided in the *Advanced Deep Learning with Keras* texbook. \cite{atienzaAdvancedDeepLearning2020}. Their implementation of SSD uses more successful layers like Batch Normalization. \cite{ioffeBatchNormalizationAccelerating2015}  The VGG16 original paper (which SSD based the backbone off of) did not use any normalization techniques. \cite{simonyanVeryDeepConvolutional2015} Figure~\ref{fig:ssd_network} shows the network architecture.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.5\textwidth]{out/ssd/ssd.png}
+    \caption{Representation of SSD Network Architecture}
+    \label{fig:ssd_network}
+\end{figure}
+
+The network chained together AlexNet blocks, a popular feature map generation block at the time. \cite{krizhevskyImageNetClassificationDeep2012} The idea was to chain Conv-ReLU-DropOut-MaxPools together. However, our implementation used BatchNorm and removed the dropout. During the training process, I also used the data augmentation methods that I mentioned earlier. 
+
+The detection heads used the output from the last 3 layers. There are two components to each detection head: (1) classification and (2) regression. The classification heads used a modified version of cross-entropy loss called varifocal loss, which takes the class imbalance into account. \cite{zhangVarifocalNetIoUawareDense2021} The localizations heads use a convolution to generate 4 parameters that localize a box $(c_x, c_y,\log{w},\log{h})$. These don't actually encode the image wide coordinates, which are stored in separately in *anchors*. Instead they are offsets with respect to the receptive field that each feature map represents. 
+
+For objects with different aspect ratios, the network would be forced to learn parameters with large magnitudes, an undesirable trait in neural networks. To combat this, instead of one box per region, there are multiple boxes per region, each with a different aspect ratio. That way, the network should easily learn at least one of the boxes and then the other boxes that correspond to the similar regions can be rejected during the nonmax supression step. 
+
+The final processing step, non-maximum suppression (NMS), consists of removing the objects below a certain confidence threshold and removing the boxes that overlap. The boxes with the highest confidence stays, and then there are hyperparameters for how much overlap is allowed before a detection considered different.
+
+The network was extremely efficient and performed adequately. The biggest issue with this network was  the simplicity. Because the network was extremely simple with only two AlexNet Blocks for preprocessing, it could not capture more advanced patterns like glint. Glint is whiteout effect that occurs when the lens is pointing towards the sun. The light would reflect off of the water and into the lens causing large portions of the image to be white.
+
+To deploy a network in production, a model goes through 2 steps. The first step to convert the .pth weights from pytorch into an ONNX file. \cite{metaTorchonnxDocumentation} ONNX is an architecture-independent format that stores the weights and the model layer information. Usually this is possible to do within torchvision. In tensorflow, use the `tf2onnx` library to convert to ONNX. \cite{Tensorflowonnx2024} The next step is to convert the ONNX file into an architecture-specific format. I used TensorRT, which has network optimizations built in when using NVIDIA embedded systems for deployment. \cite{NVIDIATensorRT2024} The command line tool `trtexec` is used to convert from the ONNX file to the PLAN file.
+
+The most difficult part of deploying to embedded hardware is if the operations the network does is not supported. If this is the case, you need to build your own TensorRT Plugin. NMS was an extremely popular operation in networks before transformer-based networks, so all I had to do was call the BatchedNMS Plugin. \cite{TensorRTPluginBatchedNMSPlugin} After converting from the ONNX file to the plan file, incorporate the model into event loop by placing the image into the device memory, and run inference, and then collect the output.
+
+\printbibliography
 \end{document}

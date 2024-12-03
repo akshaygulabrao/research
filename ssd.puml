@@ -1,0 +1,91 @@
+@startuml
+left to right direction
+
+class "Image" {
+    + input_size: 3x512x512
+}
+package "Backbone (AlexNet Blocks)" {
+    class "AlexNet Block1" {
+        + {field} Conv 3x3 
+        + ReLU
+        + BatchNorm
+        + MaxPool
+    }
+
+    class "AlexNet Block2" {
+        + {field} Conv 3x3 
+        + ReLU
+        + BatchNorm
+        + MaxPool
+    }
+
+    class "AlexNet Block3" {
+        + {field} Conv 3x3 
+        + ReLU
+        + BatchNorm
+        + MaxPool
+    }
+
+    class "AlexNet Block4" {
+        + {field} Conv 3x3 
+        + ReLU
+        + BatchNorm
+        + MaxPool
+    }
+
+    class "AlexNet Block5" {
+        + {field} Conv 3x3 
+        + ReLU
+        + BatchNorm
+        + MaxPool
+    }
+}
+
+package "Detection Heads" {
+    class "Detection Head1" {
+        + Classification
+        + Regression
+    }
+
+    class "Detection Head2" {
+        + Classification
+        + Regression
+    }
+
+    class "Detection Head3" {
+        + Classification
+        + Regression
+    }
+}
+
+class "Output" {
+    + NMS
+    + Confidence Thresholding
+}
+
+"Image" --> "AlexNet Block1"
+
+
+' "AlexNet Block1" -right[hidden]-> D1
+' "AlexNet Block2" -right[hidden]-> D2
+
+
+"AlexNet Block1" --> "AlexNet Block2": 8x256^2
+"AlexNet Block2" --> "AlexNet Block3": 16x128^2
+"AlexNet Block3" --> "AlexNet Block4": 32x64^2
+"AlexNet Block4" --> "AlexNet Block5": 64x32^2
+
+"AlexNet Block3" -left-> "Detection Head1" 
+"AlexNet Block4" -left-> "Detection Head2" 
+"AlexNet Block5" -left-> "Detection Head3" 
+
+"Detection Head1" -[hidden]-> "Detection Head2"
+"Detection Head2" -[hidden]-> "Detection Head3"
+
+"Detection Head1" -down-> "Output"
+"Detection Head2" -down-> "Output"
+"Detection Head3" -up-> "Output"
+
+'  "Backbone (AlexNet Blocks)" -[hidden]-> "Detection Heads"
+
+@enduml
