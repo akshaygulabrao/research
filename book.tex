@@ -14,15 +14,13 @@
 \addbibresource{references.bib}
 \usepackage[margin=1in]{geometry} % Set narrow margins
 \setlength{\parskip}{1em} % Adjust the value to control the space between paragraphs
-\title{Research Topics in Path-Planning and Automated Target Recognition}
+\title{Path-Planning and Automated Target Recognition}
 \author{Akshay Gulabrao}
 \date{\today}
 \begin{document}
 \maketitle
 \section{Overview}
-Logos Technologies (Logos) builds autonomous drones that operate in a mission area independently to investigate targets of interest.
-Each drone uses automated target recognition and image projection to identify and localize areas of interest in real-time.
-During my two years at Logos, I was responsible for the development and deployment of algorithms in two domains: path planning and automated target recognition.
+Logos Technologies (Logos) builds autonomous drones that operate in a mission area independently to investigate targets of interest. Each drone uses automated target recognition and image projection to identify and localize areas of interest in real-time. Anduril, a defense company startup,  is a competitor in this exact field, and I was responsible for developing the same algorithmic capabilities as Anduril. Specifically, I worked in two fields: (1) Path-Planning, and (2) Automated Target Recognition.
 
 Path planning defines navigation behavior of where and how the drone moves in a given mission area.
 In global path-planning, the drone needs specific waypoints to navigate to a location while avoiding keep-out zones.
@@ -86,51 +84,84 @@ Chan's github repository implemented the basic idea of visibility graphs which w
 \subsection{Surveillance}
 One of the ambiguous problems that I worked on at Logos was the surveillance problem. Given a large mission area, what is the best way to patrol the area so that the drone maintains situational awareness over the mission area? Some areas are more important than others and those should be visited more frequently. Less important areas don't need to be visited as much. The importance of each area is dynamic. At a particular point in time, one area can be extremely important only to become unimportant later on in the mission. Each area should get visited eventually, but the most important areas need to be visited more frequently.
 
-After a few weeks of research, I discovered that latency graphs properly represent the problem at hand. Latency graphs are different from standard graphs because they have node weights and edge weights instead of just edge weights. The latency graph $G = (V,E)$ has nodes representing important areas and edges representing the paths between them. Each node weight indicates the importance of the area, and each edge weight represents the travel time between areas. The goal is to minimize the maximum latency, which is the longest time any important area goes without being visited. By using latency graphs, I was able to develop an efficient patrol strategy that ensures critical areas are frequently monitored while still covering the entire mission area.
+After a few weeks of research, I discovered that latency graphs properly represent the problem at hand. Latency graphs are different from standard graphs because they have node weights and edge weights instead of just edge weights. The latency graph $G = (\mathcal{V},\mathcal{E})$ has edge lengths $l$ and vertex weights $\phi$. The vertex weights give the relative importance of each region for surveillance. The task is to find an infinite walk, which consists of a sequence of vertices $(v_1,v_2,...)$, given that edge $v_i,v_{i+1} \in \mathcal{E}$. The goal is to construct a walk $W$ which repeatedly iterates through all the nodes in the graph for the minimum cost. The total cost of each walk is composed of the \textit{weighted latency} of each vertex:
+\begin{align}
+C(W,v) &:= \phi(v)L(W,v)
+\end{align}
+The objective is to minimize the cost of an infinite walk $W$:
+\begin{align}
+C(W) := \max_{v\in\mathcal{V}}C(W,v)
+\end{align}
 
-The algorithm works in a stride scheduling mechanism used in operating systems, and combines this with TSP. Priorities are treated with exponential importance. The figure from the paper does an extremely accurate job of representing a solution. 
+has nodes representing important areas and edges representing the paths between them. Each node weight indicates the importance of the area, and each edge weight represents the travel time between areas. The goal is to minimize the maximum latency, which is the longest time any important area goes without being visited. By using latency graphs, I was able to develop an efficient patrol strategy that ensures critical areas are frequently monitored while still covering the entire mission area.
+
+The algorithm works in a stride scheduling mechanism used in operating systems, and combines this with TSP. Priorities are treated with exponential importance. The Figure~\ref{fig:latency} from the paper does an extremely accurate job of demonstrating the algorithm.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.5\textwidth]{images/latency.png}
+    \caption{The algorithm works in a 3-stage process. The first stage is partitioning the vertices according to their priority. The second is splitting nodes across different priorities into groups. The third is running the TSP problem on each group.}
+    \label{fig:latency}
+\end{figure}
 \cite{alamdariPersistentMonitoringDiscrete2012}
 % ---------------% ---------------% ---------------% ---------------% ---------------% ---------------% ---------------% ---------------% ---------------% ---------------% ---------------
 \subsection{Motion Planning}
-This section, unlike other sections was still ongoing. I was abruptly laid off during the midpoint of this project. The idea was to extend the 4D surveillance problem into an active intelligent weapon system. We would use attritable fixed-wing drones to automatically converge on targets when a target is inside the convergence radius. which started off with basic PID control while staying in the field of view, and then would transition into a UAV trajectory optimization problem similar to \cite{marcucciMotionPlanningObstacles2022}. They combine trajectory optimization with path planning using with mixed-integer second-order cone optimization. I relax a bunch of assumptions made in that paper, and slowly built up to the complexity of that problem. The paper is highly theoretical, and I ignore things like Kalman Filters.
+This section, unlike other sections was still ongoing. I was abruptly laid off during the midpoint of this project.  To extend a surveillance product into a weapon, we would need to use attritable fixed-wing drones to automatically converge on targets when a target is inside the convergence radius. Logos has a product that can launch autonomous drones and maintain a model of targets of interest. To keep up with companies like Anduril, surveillance drones weren't enough. Anduril already has this capability with their Fury drone.\cite{andurilIntroducingFuryAutonomous} I was tasked with building up the foundational knowledge required for missile guidance.
+
+This foundational research started off with proportional navigation while staying in the field of view, and then would transition into a UAV trajectory optimization problem similar to \cite{marcucciMotionPlanningObstacles2022}. They combine trajectory optimization with path planning and mixed-integer second-order cone optimization. I relax a bunch of assumptions made in that paper, and slowly built up to the complexity of that problem.
 
 The work started off with proportional navigation, where the drone has control over its change in angle and its acceleration. The drone would use the camera to track the target, and then use the proportional navigation equations to adjust its heading and acceleration to converge on the target. One of the challenges is that the drone would need to throttle its own speed to keep in the line of sight of the target. Another challenge was using the correct angle update that dealt with switching between 0 degrees and 360 degrees smoothly.
 
-Let:
-\begin{itemize}
-    \item \( d \): angle\_diff
-    \item \( h \): ally\_heading
-    \item \( s \): ally\_speed
-    \item \( v \): desired\_velocity
-    \item \( M \): MAX\_ANGLE\_CHANGE
-    \item \( m \) and \( M_s \): ALLY\_MIN\_SPEED and ALLY\_MAX\_SPEED
-\end{itemize}
+Let: \( \Delta \theta \): angle\_diff, \( \theta \): ally\_heading, \( v \): ally\_speed, \( v_d \): desired\_velocity, \( \Delta \theta_{\text{max}} \): the maximum angle change, \( v_{\text{min}} \) and \( v_{\text{max}} \): the ally's minimum speed and the ally's maximum speed.
 
 The updates can be expressed as:
 
 1. Heading
 \[
-h \leftarrow h + 
+\theta \leftarrow \theta + 
 \begin{cases} 
-M \cdot \text{sgn}(d) & \text{if } |d| > M \\
-d & \text{otherwise}
+\Delta \theta_{\text{max}} \cdot \text{sgn}(\Delta \theta) & \text{if } |\Delta \theta| > \Delta \theta_{\text{max}} \\
+\Delta \theta & \text{otherwise}
 \end{cases}
 \]
 
 2. Speed
 \[
-s \leftarrow 
+v \leftarrow 
 \begin{cases} 
-\|v\| & \text{if } s > \|v\| \\
-\max\left(m, \frac{M_s}{|d| / M}\right) & \text{if } |d| > M \\
-M_s & \text{otherwise}
+\|v_d\| & \text{if } v > \|v_d\| \\
+\max\left(v_{\text{min}}, \frac{v_{\text{max}}}{|\Delta \theta| / \Delta \theta_{\text{max}}}\right) & \text{if } |\Delta \theta| > \Delta \theta_{\text{max}} \\
+v_{\text{max}} & \text{otherwise}
 \end{cases}
 \]
 
 The velocity update is the most straightforward. It simply updates the velocity using the updated heading and speed. 
 
-Then the idea was to connect this to trajectory optimization. Because there are no errors in navigation, given an initial state and a goal state, the optimal trajectory is deterministic. The trajectory optimization problem is then a matter of finding the optimal control inputs to the system. We can formulate this using the concept of Bezier curves. Bezier curves are polynomial representations of a trajectory. They consist of a sum of Bernstein polynomials, 
- % ---------------% ---------------% ---------------% ---------------% ---------------% ---------------% ---------------% ---------------% ---------------
+Then the idea was to connect this to trajectory optimization.\cite{choiPathPlanningBased2008} Because there are no errors in navigation, given an initial state and a goal state, the optimal trajectory is deterministic. The trajectory optimization problem is then a matter of finding the optimal control inputs to the system. We can formulate this using the concept of Bezier curves. Bezier curves are polynomial representations of a trajectory. They consist of a sum of Bernstein polynomials. A Bernstein polynomial is defined as 
+
+\[
+\beta_{k,d}(s) := \binom{d}{k}s^k(1-s)^{d-k}
+\]
+
+One core idea in Bernstein polynomials is that they have a similar structure to the binomial distribution. The integral after summing up all the terms from k = 0 to d is 1. Bezier curves do exactly this. Formally, a bezier curve is defined as
+\[
+\gamma(s) := \sum_{k=0}^{d}\beta_{k,d}(s)\gamma_k
+\]
+A bezier curve is defined by the $k$ hyperparameters called \textit{control points}. Bezier curves are used because they generate smooth trajectories. The fewer control points in a bezier curve, the smoother the trajectory. Bezier curves are used to find closed solutions to problems that proportional navigation did. 
+
+Bezier curves can be utilized to enforce differntial and motion constraints with nonlinear optimization. Common practice in research is to use nonlinear optimization software like MOSEK or Gurobi, but I found it much more intuitive to use pytorch because it allows for precise control under the hood.Figure~\ref{fig:bezier} shows a critical snippet of code used for bezier optimization. 
+
+\begin{figure}[h] % 'h' means here, allowing the figure to be placed at the current location
+    \centering % Centers the image
+    \includegraphics[width=0.5\textwidth]{images/torch_bezier.png} % Adjust the width as needed
+    \caption{A small snippet of code demonstrating the idea behind motion planning with bezier curves} % Caption for the image
+    \label{fig:bezier} % Label for referencing the image in the text
+\end{figure}
+
+Automatic differentiation simplifies debugging the motion planner. The next steps would be to extend this in a simulation using the software in the loop autopilot simulation, to see if I'm able to implement a real version. I wouldn't actually need to finish developing the path-planning based version of this algorithm because it is intended to be used as missile guidance, not obstacle avoidance. This saves me a lot of work in getting a nonlinear, mixed integer solver. 
+
+I'm not sure why the original paper insisted on a space decomposition for trajectory proposals. My intuition tells me that sampling based planners like RRT or ant-colony optimization would have been much better. I wonder what I'm missing. 
+
+% ---------------% ---------------% ---------------% ---------------% ---------------% ---------------% ---------------% ---------------% ---------------
 \section{Automated Target Recognition}
 Automated target recognition (ATR) refers to the class of problems that involve recognizing specified objects from imagery. One of the common use cases for object detection in military applications is for vehicles. Currently, the most popular way to approach the problem is with convolutional neural networks (CNNs).
 
@@ -155,14 +186,7 @@ Another type of simulation that we utilized was the Microsoft Flight Simulator. 
 \subsubsection{Data Augmentation}
 After collecting internal data collected from previous runs in addition to the simulation, data augmentation is a popular technique to demonstrate semantic invariances to the network. \cite{krizhevskyImageNetClassificationDeep2012} The idea is to change the images in some way to show the network that certain transformations don't matter. A simple example of a data augmentation technique is flipping the image from left to right. Flipping the image does not change the identity of the object and helps the convolutional filters learn the objects from two perspectives.
 
-Common practice (at least at Logos) was:
-\begin{itemize}
-    \item Resize
-    \item RandomCrop
-    \item RandomHorizontalFlip
-    \item RandomPhotometricDistortion
-\end{itemize}
-This chain of data augmentation methods was extremely successful for object detection in evaluation scenarios.
+Common practice (at least at Logos) was to use a chain of data augmentation methods including Resize, RandomCrop, RandomHorizontalFlip, and RandomPhotometricDistortion, which was extremely successful for object detection in evaluation scenarios.
 
 \subsection{SSD}
 The network architecture of CNNs must play a balancing act between complexity and speed. Empirically, the best object detection backbones consist of 3 components: (1) backbone, (2) neck, and (3) head.
@@ -199,9 +223,6 @@ I briefly built python simulations for the image projection problem. Image proje
 
 \subsection{Image Registration}
 I ran DFT registration on internal datasets to verify as an experiment for its viability in bundle adjustment. Bundle adjustment is the process of aligning multiple images to a common coordinate frames given that the camera parameters are slightly different.
-
-\subsection{Kalman Filter}
-I never had the explicit assignment to write a Kalman Filter, but it was a crucial step to building understandign of the MHT tracker. The Kalman Filter is a state estimation technique that uses a stream of measurements to update estimates of the system state, and the process error. We want to approximate the system state given a known prior distribution of the noise. 
 
 \printbibliography
 \end{document}
