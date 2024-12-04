@@ -9,9 +9,9 @@
 \usepackage{outlines}
 \usepackage{algorithmic}
 \usepackage{biblatex}
+\usepackage{enumitem} 
+
 \addbibresource{references.bib}
-
-
 \usepackage[margin=1in]{geometry} % Set narrow margins
 \setlength{\parskip}{1em} % Adjust the value to control the space between paragraphs
 \title{Research Topics in Path-Planning and Automated Target Recognition}
@@ -84,16 +84,53 @@ The naive algorithm is the simplest approach. It runs in $\mathcal{O}(n^4)$ time
 Chan's github repository implemented the basic idea of visibility graphs which was very useful to me. \cite{chanMatthewachanVgraph2022} However, the code in the repository had a critical flaw. It automatically assumed that the shortest path would never involve staying on the polygon for two adjacent segments. There were no edges checked between points on the same polygon, only points going from one polygon to another. Any time there was only one polygon between the source and the destination, the algorithm would fail. I modified this work to add that adjacent points on the same polygon are visible.
 
 \subsection{Surveillance}
-One of the ambiguous problems that I worked on at Logos was the surveillance problem. Given a large mission area, what is the best way to patrol the area so that the drone maintains situational awareness over the mission area. Some areas are more important than others and those should be visited more frequently. Less important areas don't need to be visited as much. The importance of each area is dynamic. At a particular point in time, one area can be extremely important only to become unimportant later on in the mission. Each area should get visited eventually, but the most important areas need to be visited more frequently.
+One of the ambiguous problems that I worked on at Logos was the surveillance problem. Given a large mission area, what is the best way to patrol the area so that the drone maintains situational awareness over the mission area? Some areas are more important than others and those should be visited more frequently. Less important areas don't need to be visited as much. The importance of each area is dynamic. At a particular point in time, one area can be extremely important only to become unimportant later on in the mission. Each area should get visited eventually, but the most important areas need to be visited more frequently.
 
 After a few weeks of research, I discovered that latency graphs properly represent the problem at hand. Latency graphs are different from standard graphs because they have node weights and edge weights instead of just edge weights. The latency graph $G = (V,E)$ has nodes representing important areas and edges representing the paths between them. Each node weight indicates the importance of the area, and each edge weight represents the travel time between areas. The goal is to minimize the maximum latency, which is the longest time any important area goes without being visited. By using latency graphs, I was able to develop an efficient patrol strategy that ensures critical areas are frequently monitored while still covering the entire mission area.
 
-The algorithm works in a stride scheduling mechanism similar to OS's and combines this with TSP.
+The algorithm works in a stride scheduling mechanism used in operating systems, and combines this with TSP. Priorities are treated with exponential importance. The figure from the paper does an extremely accurate job of representing a solution. 
 \cite{alamdariPersistentMonitoringDiscrete2012}
-
+% ---------------% ---------------% ---------------% ---------------% ---------------% ---------------% ---------------% ---------------% ---------------% ---------------% ---------------
 \subsection{Motion Planning}
-Motion Planning involves the use of convex optimization for trajectory optimization. Motion Planning with Graphs of Convex Sets combines network flows, and trajectory optimization to find optimal trajectories. The optimal trajectory is formulated using bezier curves. Motion planning is different than path navigation because it requires motor instructions for each timestep.
+This section, unlike other sections was still ongoing. I was abruptly laid off during the midpoint of this project. The idea was to extend the 4D surveillance problem into an active intelligent weapon system. We would use attritable fixed-wing drones to automatically converge on targets when a target is inside the convergence radius. which started off with basic PID control while staying in the field of view, and then would transition into a UAV trajectory optimization problem similar to \cite{marcucciMotionPlanningObstacles2022}. They combine trajectory optimization with path planning using with mixed-integer second-order cone optimization. I relax a bunch of assumptions made in that paper, and slowly built up to the complexity of that problem. The paper is highly theoretical, and I ignore things like Kalman Filters.
 
+The work started off with proportional navigation, where the drone has control over its change in angle and its acceleration. The drone would use the camera to track the target, and then use the proportional navigation equations to adjust its heading and acceleration to converge on the target. One of the challenges is that the drone would need to throttle its own speed to keep in the line of sight of the target. Another challenge was using the correct angle update that dealt with switching between 0 degrees and 360 degrees smoothly.
+
+Let:
+\begin{itemize}
+    \item \( d \): angle\_diff
+    \item \( h \): ally\_heading
+    \item \( s \): ally\_speed
+    \item \( v \): desired\_velocity
+    \item \( M \): MAX\_ANGLE\_CHANGE
+    \item \( m \) and \( M_s \): ALLY\_MIN\_SPEED and ALLY\_MAX\_SPEED
+\end{itemize}
+
+The updates can be expressed as:
+
+1. Heading
+\[
+h \leftarrow h + 
+\begin{cases} 
+M \cdot \text{sgn}(d) & \text{if } |d| > M \\
+d & \text{otherwise}
+\end{cases}
+\]
+
+2. Speed
+\[
+s \leftarrow 
+\begin{cases} 
+\|v\| & \text{if } s > \|v\| \\
+\max\left(m, \frac{M_s}{|d| / M}\right) & \text{if } |d| > M \\
+M_s & \text{otherwise}
+\end{cases}
+\]
+
+The velocity update is the most straightforward. It simply updates the velocity using the updated heading and speed. 
+
+Then the idea was to connect this to trajectory optimization. Because there are no errors in navigation, given an initial state and a goal state, the optimal trajectory is deterministic. The trajectory optimization problem is then a matter of finding the optimal control inputs to the system. We can formulate this using the concept of Bezier curves. Bezier curves are polynomial representations of a trajectory. They consist of a sum of Bernstein polynomials, 
+ % ---------------% ---------------% ---------------% ---------------% ---------------% ---------------% ---------------% ---------------% ---------------
 \section{Automated Target Recognition}
 Automated target recognition (ATR) refers to the class of problems that involve recognizing specified objects from imagery. One of the common use cases for object detection in military applications is for vehicles. Currently, the most popular way to approach the problem is with convolutional neural networks (CNNs).
 
@@ -155,6 +192,16 @@ The network was extremely efficient and performed adequately. The biggest issue 
 To deploy a network in production, a model goes through 2 steps. The first step to convert the .pth weights from pytorch into an ONNX file. \cite{metaTorchonnxDocumentation} ONNX is an architecture-independent format that stores the weights and the model layer information. Usually this is possible to do within torchvision. In tensorflow, use the `tf2onnx` library to convert to ONNX. \cite{Tensorflowonnx2024} The next step is to convert the ONNX file into an architecture-specific format. I used TensorRT, which has network optimizations built in when using NVIDIA embedded systems for deployment. \cite{NVIDIATensorRT2024} The command line tool `trtexec` is used to convert from the ONNX file to the PLAN file.
 
 The most difficult part of deploying to embedded hardware is if the operations the network does is not supported. If this is the case, you need to build your own TensorRT Plugin. NMS was an extremely popular operation in networks before transformer-based networks, so all I had to do was call the BatchedNMS Plugin. \cite{TensorRTPluginBatchedNMSPlugin} After converting from the ONNX file to the plan file, incorporate the model into event loop by placing the image into the device memory, and run inference, and then collect the output.
+
+\section{Smaller Projects}
+\subsection{Image Projection}
+I briefly built python simulations for the image projection problem. Image projection is the process of converting 3D points to 2D points given a camera model. The camera parameters include the focal length, the center of projection, and the distortion coefficients. Their are typically two types of distortions: radial distortion and tangential distortion. Radial distortion is due to the lens being shaped like a meniscus lens, and tangential distortion is due to the lens not being perfectly aligned with the image plane. 
+
+\subsection{Image Registration}
+I ran DFT registration on internal datasets to verify as an experiment for its viability in bundle adjustment. Bundle adjustment is the process of aligning multiple images to a common coordinate frames given that the camera parameters are slightly different.
+
+\subsection{Kalman Filter}
+I never had the explicit assignment to write a Kalman Filter, but it was a crucial step to building understandign of the MHT tracker. The Kalman Filter is a state estimation technique that uses a stream of measurements to update estimates of the system state, and the process error. We want to approximate the system state given a known prior distribution of the noise. 
 
 \printbibliography
 \end{document}

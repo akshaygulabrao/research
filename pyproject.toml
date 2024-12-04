@@ -6,6 +6,10 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "cvxpy>=1.6.0",
+    "ipykernel>=6.29.5",
     "matplotlib>=3.9.2",
     "numpy>=2.1.3",
+    "ortools>=9.11.4210",
+    "pulp>=2.9.0",
+    "torch>=2.5.1",
 ]

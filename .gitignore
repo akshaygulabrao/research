@@ -35,3 +35,20 @@ uv.lock
 *.run.xml
 
 images/
+fpns/
+out/
+*.pdf
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.bmp
+*.bbl
+*.blg
+*.brf
+*.idx
+*.ilg
+*.ind
+*.lof
+*bcf-SAVE-ERROR
+*.bcf

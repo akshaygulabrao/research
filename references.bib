@@ -84,6 +84,22 @@
   file = {/Users/ox/Zotero/storage/DWYR2Q7V/Erhan et al. - 2013 - Scalable Object Detection using Deep Neural Networks.pdf;/Users/ox/Zotero/storage/7TS7GQCG/1312.html}
 }
 
+@inproceedings{haoDifferentialFlatnessbasedTrajectory2005,
+  title = {Differential Flatness-Based Trajectory Planning for Multiple Unmanned Aerial Vehicles Using Mixed-Integer Linear Programming},
+  booktitle = {Proceedings of the 2005, {{American Control Conference}}, 2005.},
+  author = {Hao, Yongxing and Davari, A. and Manesh, A.},
+  year = {2005},
+  month = jun,
+  pages = {104-109 vol. 1},
+  issn = {2378-5861},
+  doi = {10.1109/ACC.2005.1469916},
+  url = {https://ieeexplore.ieee.org/document/1469916/?arnumber=1469916},
+  urldate = {2024-12-04},
+  abstract = {This paper provides a method for planning fuel-optimal trajectories for multiple unmanned aerial vehicles to reconfigure and traverse between goal points in a dynamic environment in real-time. Recent developments in robot motion planning have shown that trajectory optimization of linear vehicle systems including collision avoidance can be written as a linear program subject to mixed integer constraints, known as a mixed integer linear program (MILP). This paper extends the trajectory optimization to a class of nonlinear systems: differentially flat systems using MILP. A polynomial basis for a Ritz approximation of the optimal solution reduces the optimization variables and computation time without discretizing the systems. Based on the differential flatness property of unmanned vehicle systems, the trajectory planner satisfies the kinematic constraints of the individual vehicles while accounting for inter-vehicle collision and path constraints. The analytical fuel-optimal trajectories are smooth and continuous. Illustrative trajectory planning examples of multiple unmanned aerial vehicles are presented.},
+  keywords = {Linear programming,Motion planning,Nonlinear systems,Polynomials,Remotely operated vehicles,Robot motion,Technology planning,Trajectory,Unmanned aerial vehicles,Vehicle dynamics},
+  file = {/Users/ox/Zotero/storage/DNYPY2QI/1469916.html}
+}
+
 @article{hartFormalBasisHeuristic1968,
   title = {A {{Formal Basis}} for the {{Heuristic Determination}} of {{Minimum Cost Paths}}},
   author = {Hart, Peter E. and Nilsson, Nils J. and Raphael, Bertram},
@@ -131,6 +147,23 @@
   urldate = {2024-12-03},
   abstract = {We trained a large, deep convolutional neural network to classify the 1.3 million high-resolution images in the LSVRC-2010 ImageNet training set into the 1000 different classes. On the test data, we achieved top-1 and top-5 error rates of 39.7{\textbackslash}\% and 18.9{\textbackslash}\% which is considerably better than the previous state-of-the-art results. The neural network, which has 60 million parameters and 500,000 neurons, consists of five convolutional layers, some of which are followed by max-pooling layers, and two globally connected layers with a final 1000-way softmax. To make training faster, we used non-saturating neurons and a very efficient GPU implementation of convolutional nets. To reduce overfitting in the globally connected layers we employed a new regularization method that proved to be very effective.},
   file = {/Users/ox/Zotero/storage/GCFXFR5X/Krizhevsky et al. - 2012 - ImageNet Classification with Deep Convolutional Neural Networks.pdf}
+}
+
+@book{lavallePlanningAlgorithms2006,
+  title = {Planning {{Algorithms}}},
+  author = {LaValle, Steven M.},
+  year = {2006},
+  month = may,
+  edition = {1},
+  publisher = {Cambridge University Press},
+  doi = {10.1017/CBO9780511546877},
+  url = {https://www.cambridge.org/core/product/identifier/9780511546877/type/book},
+  urldate = {2024-12-03},
+  abstract = {Planning algorithms are impacting technical disciplines and industries around the world, including robotics, computer-aided design, manufacturing, computer graphics, aerospace applications, drug design, and protein folding. This coherent and comprehensive book unifies material from several sources, including robotics, control theory, artificial intelligence, and algorithms. The treatment is centered on robot motion planning, but integrates material on planning in discrete spaces. A major part of the book is devoted to planning under uncertainty, including decision theory, Markov decision processes, and information spaces, which are the 'configuration spaces' of all sensor-based planning problems. The last part of the book delves into planning under differential constraints that arise when automating the motions of virtually any mechanical system. This text and reference is intended for students, engineers, and researchers in robotics, artificial intelligence, and control theory as well as computer graphics, algorithms, and computational biology.},
+  copyright = {https://www.cambridge.org/core/terms},
+  isbn = {978-0-521-86205-9 978-0-511-54687-7},
+  langid = {english},
+  file = {/Users/ox/Zotero/storage/F54LWVZA/LaValle - 2006 - Planning Algorithms.pdf}
 }
 
 @misc{linFeaturePyramidNetworks2017,
@@ -183,6 +216,24 @@
   urldate = {2024-12-03},
   langid = {english},
   file = {/Users/ox/Zotero/storage/ECIBHLRH/Lozano-Pérez and Wesley - 1979 - An algorithm for planning collision-free paths among polyhedral obstacles.pdf}
+}
+
+@misc{marcucciMotionPlanningObstacles2022,
+  title = {Motion {{Planning}} around {{Obstacles}} with {{Convex Optimization}}},
+  author = {Marcucci, Tobia and Petersen, Mark and von Wrangel, David and Tedrake, Russ},
+  year = {2022},
+  month = may,
+  number = {arXiv:2205.04422},
+  eprint = {2205.04422},
+  primaryclass = {cs},
+  publisher = {arXiv},
+  doi = {10.48550/arXiv.2205.04422},
+  url = {http://arxiv.org/abs/2205.04422},
+  urldate = {2024-12-04},
+  abstract = {Trajectory optimization offers mature tools for motion planning in high-dimensional spaces under dynamic constraints. However, when facing complex configuration spaces, cluttered with obstacles, roboticists typically fall back to sampling-based planners that struggle in very high dimensions and with continuous differential constraints. Indeed, obstacles are the source of many textbook examples of problematic nonconvexities in the trajectory-optimization problem. Here we show that convex optimization can, in fact, be used to reliably plan trajectories around obstacles. Specifically, we consider planning problems with collision-avoidance constraints, as well as cost penalties and hard constraints on the shape, the duration, and the velocity of the trajectory. Combining the properties of B{\textbackslash}'ezier curves with a recently-proposed framework for finding shortest paths in Graphs of Convex Sets (GCS), we formulate the planning problem as a compact mixed-integer optimization. In stark contrast with existing mixed-integer planners, the convex relaxation of our programs is very tight, and a cheap rounding of its solution is typically sufficient to design globally-optimal trajectories. This reduces the mixed-integer program back to a simple convex optimization, and automatically provides optimality bounds for the planned trajectories. We name the proposed planner GCS, after its underlying optimization framework. We demonstrate GCS in simulation on a variety of robotic platforms, including a quadrotor flying through buildings and a dual-arm manipulator (with fourteen degrees of freedom) moving in a confined space. Using numerical experiments on a seven-degree-of-freedom manipulator, we show that GCS can outperform widely-used sampling-based planners by finding higher-quality trajectories in less time.},
+  archiveprefix = {arXiv},
+  keywords = {Computer Science - Robotics},
+  file = {/Users/ox/Zotero/storage/6TM4K3K4/Marcucci et al. - 2022 - Motion Planning around Obstacles with Convex Optimization.pdf;/Users/ox/Zotero/storage/9WSKSZER/2205.html}
 }
 
 @misc{MathZettlrUser,
@@ -249,6 +300,18 @@
   urldate = {2024-12-03},
   langid = {english},
   file = {/Users/ox/Zotero/storage/3LPDI5SC/batchedNMSPlugin.html}
+}
+
+@misc{tower10ipaHiOneYJust2014,
+  type = {Reddit {{Post}}},
+  title = {Hi {{OneY}}. {{I}} Just Don't like the Company of Other Men.. i'd Rather Have Female Friends},
+  author = {{tower10ipa}},
+  year = {2014},
+  month = dec,
+  journal = {r/OneY},
+  url = {www.reddit.com/r/OneY/comments/2qd77l/hi_oney_i_just_dont_like_the_company_of_other_men/},
+  urldate = {2024-12-03},
+  file = {/Users/ox/Zotero/storage/JBAK2XJ8/hi_oney_i_just_dont_like_the_company_of_other_men.html}
 }
 
 @misc{TransformingAugmentingImages,
